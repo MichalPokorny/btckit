@@ -1,0 +1,4 @@
+#!/bin/bash
+
+RESULT=`/home/prvak/bin/btcreport/btcreport`
+xosdutilctl echo $RESULT
