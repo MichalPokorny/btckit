@@ -32,13 +32,16 @@ module BtcKit
 		end
 
 		def send_mail(what)
+			raise unless @config
+
 			ticker = @ticker
-			target = @config.mail_target
+			mail_from = @config.mail_from
+			mail_target = @config.mail_target
 			mail = Mail.new do
-				from 'noreply+stoploss@rny.cz'
-				to target
+				from mail_from
+				to mail_target
 				subject "BTC StopLoss ALERT (#{ticker})!"
-				body <<EOF
+				body <<-EOF
 	Current bitcoin price as of #{Time.now}: #{ticker}
 
 	Alerting you about:
@@ -68,7 +71,7 @@ EOF
 			elsif order["type"] == :alert_down
 				send_mail(order)
 			else
-				send_mail("Errror: invalid order type #{order["type"]}!") # TODO: something better
+				send_mail("Error: invalid order type #{order["type"]}!") # TODO: something better
 			end
 		end
 

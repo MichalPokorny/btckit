@@ -13,6 +13,25 @@ module BtcKit
 		end
 
 		private
+		def load_config
+			begin
+				@config = YAML.load_file(config_dir + "config.yaml")
+			rescue
+				raise "Failed to load btckit configuration."
+			end
+
+			unless @config.is_a? Hash
+				raise "Config is not a hash."
+			end
+		end
+
+		public
+		def config
+			load_config unless @config
+			@config.with_indifferent_access
+		end
+
+		private
 		def load_credentials
 			begin
 				@credentials = YAML.load_file(config_dir + "credentials.yaml")
@@ -72,9 +91,12 @@ module BtcKit
 			return f.read.to_i
 		end
 
+		def mail_from
+			config[:mail_from] || 'no-reply@example.com'
+		end
+
 		def mail_target
-			# TODO: make this changable
-			[ 'pok@rny.cz', '+420720182089@sms.cz.o2.com' ]
+			config[:mail_to] or raise "No mail target specified!"
 		end
 	end
 end
