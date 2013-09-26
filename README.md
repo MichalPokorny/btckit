@@ -36,6 +36,15 @@ Now you can use the first function of `btckit`: the `btcreport` utility.
 * If you give `btcreport` a numerical parameter (e.g. `btcreport 1024.5`), `btcreport` tells you what your
   profits would be should Bitcoin reach the value in USD that you provided.
 
+## Usage - Czech koruna Bitcoin wallet value
+
+`btc-wallet-price` reports the value of your Bitcoin wallet in Czech koruna and the difference between your
+initial investment and its current value. It expects your Bitcoin wallet balance in `~/.btckit/wallet_btc`:
+
+	$ echo "1024.5" > ~/.btckit/wallet_btc
+
+It pulls the CZK/BTC ticker from the API of http://bitcash.cz/market/.
+
 ## Usage - alerts (btc-stoploss)
 
 To use alerts, you need to tell `btckit` some things about the mails it should send out.

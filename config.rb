@@ -91,6 +91,12 @@ module BtcKit
 			return f.read.to_i
 		end
 
+		def wallet_btc
+			f = File.open(config_dir + "wallet_btc", "r")
+			return f.read.to_f
+		end
+
+
 		def mail_from
 			config[:mail_from] || 'no-reply@example.com'
 		end
