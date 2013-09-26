@@ -25,7 +25,17 @@ module BtcKit
 			currentCZK = config.wallet_btc * ticker
 			delta = currentCZK - initialCZK
 			deltaPercent = (delta / initialCZK) * 100.0
-			puts "%.2f Kč (%+.2f Kč, %+.2f%%)" % [currentCZK, delta, deltaPercent]
+
+			result = "%.2f Kč (%+.2f Kč, %+.2f%%)" % [currentCZK, delta, deltaPercent]
+
+			case ARGV.shift
+			when "--xosd"
+				system "xosdutilctl", "echo", result
+			when nil
+				puts result
+			else
+				puts "Usage: btc-wallet-price [--xosd]"
+			end
 		end
 	end
 end
