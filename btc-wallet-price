@@ -18,7 +18,7 @@ module BtcKit
 			raw = false
 			xosd = false
 
-			until ARGV.empty
+			until ARGV.empty?
 				case ARGV.shift
 				when "--xosd" then xosd = true
 				when "--raw" then raw = true
