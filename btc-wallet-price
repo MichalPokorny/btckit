@@ -15,6 +15,17 @@ require_relative 'config'
 module BtcKit
 	class BtcWalletPrice
 		def main
+			raw = false
+			xosd = false
+
+			until ARGV.empty
+				case ARGV.shift
+				when "--xosd" then xosd = true
+				when "--raw" then raw = true
+				else puts "Usage: btc-wallet-price [--xosd] [--raw]"; exit 1
+				end
+			end
+
 			config = Config.new
 
 			json = JSON.parse(Net::HTTP.get_response(URI.parse "http://bitcash.cz/market/api/BTCCZK/ticker.json").body)
@@ -26,15 +37,16 @@ module BtcKit
 			delta = currentCZK - initialCZK
 			deltaPercent = (delta / initialCZK) * 100.0
 
-			result = "%.2f Kč (%+.2f Kč, %+.2f%%)" % [currentCZK, delta, deltaPercent]
-
-			case ARGV.shift
-			when "--xosd"
-				system "xosdutilctl", "echo", result
-			when nil
-				puts result
+			result = if raw
+				"%.2f" % currentCZK
 			else
-				puts "Usage: btc-wallet-price [--xosd]"
+				"%.2f Kč (%+.2f Kč, %+.2f%%)" % [currentCZK, delta, deltaPercent]
+			end
+
+			if xosd
+				system "xosdutilctl", "echo", result
+			else
+				puts result
 			end
 		end
 	end
