@@ -1,4 +1,5 @@
-#!/usr/bin/ruby -w
+#!/usr/bin/ruby
+# TODO: -w
 
 # Usage: btc-wallet-price [--xosd]
 
@@ -14,6 +15,17 @@ require_relative 'config'
 
 module BtcKit
 	class BtcWalletPrice
+		def initialize
+			@config = Config.new
+		end
+
+		def current_value
+			json = JSON.parse(Net::HTTP.get_response(URI.parse "http://bitcash.cz/market/api/BTCCZK/ticker.json").body)
+			raise unless json["result"] == "success"
+			ticker = json["data"]["sell"]["value"]
+			@config.wallet_btc * ticker
+		end
+		
 		def main
 			raw = false
 			xosd = false
@@ -26,14 +38,8 @@ module BtcKit
 				end
 			end
 
-			config = Config.new
-
-			json = JSON.parse(Net::HTTP.get_response(URI.parse "http://bitcash.cz/market/api/BTCCZK/ticker.json").body)
-			raise unless json["result"] == "success"
-			ticker = json["data"]["sell"]["value"]
-
-			initialCZK = config.initial_czk
-			currentCZK = config.wallet_btc * ticker
+			currentCZK = current_value
+			initialCZK = @config.initial_czk
 			delta = currentCZK - initialCZK
 			deltaPercent = (delta / initialCZK) * 100.0
 
