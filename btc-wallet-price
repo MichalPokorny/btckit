@@ -8,10 +8,7 @@ ENV['BUNDLE_GEMFILE'] = File.dirname(__FILE__) + "/Gemfile"
 require 'rubygems'
 require 'bundler/setup'
 
-require 'net/http'
-require 'json'
-
-require_relative 'config'
+require_relative 'bitcoin-price'
 
 module BtcKit
 	class BtcWalletPrice
@@ -19,36 +16,6 @@ module BtcKit
 			@config = Config.new
 		end
 
-		def current_value
-			@config.wallet_btc * btc_localbitcoins_manual
-		end
-
-		def btc_localbitcoins_manual
-			response = Net::HTTP::get_response(URI.parse "https://localbitcoins.com/bitcoincharts/CZK/trades.json").body
-			json = JSON.parse(response)
-
-			last_10 = json.reverse.take(10).map { |trade| trade["price"].to_f }
-			last_10.inject(&:+) / last_10.size
-		end
-
-		def btc_avg_localbitcoins
-			response = Net::HTTP::get_response(URI.parse "https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/").body
-			json = JSON.parse(response)
-
-			raise "Response doesn't contain CZK: #{response}" unless json["CZK"]
-			ticker = json["CZK"]
-			avg = ticker["avg_3h"] || ticker["avg_12h"] || ticker["avg_24h"] or raise "Cannot get average price (ticker: #{ticker.inspect})"
-
-			avg.to_f
-		end
-
-		# BitCash API (dropped)
-		def btc_price_bitcash
-			json = JSON.parse(Net::HTTP.get_response(URI.parse "http://bitcash.cz/market/api/BTCCZK/ticker.json").body)
-			raise unless json["result"] == "success"
-			json["data"]["sell"]["value"].to_f
-		end
-		
 		def main
 			raw = false
 			xosd = false
@@ -61,7 +28,9 @@ module BtcKit
 				end
 			end
 
-			currentCZK = current_value
+			price = BtcPrice.new
+
+			currentCZK = price.current_value
 			initialCZK = @config.initial_czk
 			delta = currentCZK - initialCZK
 			deltaPercent = (delta / initialCZK) * 100.0
