@@ -10,11 +10,12 @@ module BtcKit
 		end
 
 		def current_value
-			@config.wallet_btc * btc_localbitcoins_manual
+			@config.wallet_btc * btc_avg_localbitcoins # btc_localbitcoins_manual
 		end
 
+		# TODO: this method returns at most 500 trades, it must be iterated!
 		def btc_localbitcoins_manual
-			response = Net::HTTP::get_response(URI.parse "https://localbitcoins.com/bitcoincharts/CZK/trades.json").body
+			response = Net::HTTP::get_response(URI.parse "https://localbitcoins.com/bitcoincharts/CZK/trades.json?since=311531").body
 			json = JSON.parse(response)
 
 			last = json.sort { |x, y| y["date"] <=> x["date"] }.take(5)
