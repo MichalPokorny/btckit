@@ -32,7 +32,11 @@ module BtcKit
 
 			raise "Response doesn't contain CZK: #{response}" unless json["CZK"]
 			ticker = json["CZK"]
-			avg = ticker["avg_3h"] || ticker["avg_12h"] || ticker["avg_24h"] or raise "Cannot get average price (ticker: #{ticker.inspect})"
+
+			%w{avg_1h avg_12h avg_24h}.each do |key|
+				ticker.delete(key) unless ticker[key] > 0
+			end
+			avg = ticker["avg_1h"] || ticker["avg_12h"] || ticker["avg_24h"] or raise "Cannot get average price (ticker: #{ticker.inspect})"
 
 			avg.to_f
 		end

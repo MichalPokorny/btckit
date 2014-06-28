@@ -35,11 +35,12 @@ module BtcKit
 			delta = currentCZK - initialCZK
 			deltaPercent = (delta / initialCZK) * 100.0
 
-			result = if raw
-				"%.2f" % currentCZK
-			else
-				"%.2f Kč (%+.2f Kč, %+.2f%%)" % [currentCZK, delta, deltaPercent]
-			end
+			result =
+				if raw
+					"%.2f" % currentCZK
+				else
+					"%.2f Kč (%+.2f Kč, %+.2f%%)" % [currentCZK, delta, deltaPercent]
+				end
 
 			if xosd
 				system "xosdutilctl", "echo", result
