@@ -1,5 +1,6 @@
 require 'net/http'
 require 'json'
+require 'bigdecimal'
 
 require_relative 'config'
 
@@ -9,29 +10,47 @@ module BtcKit
 			@config = Config.new
 		end
 
+		private
+
+		def average(array)
+			array.inject(&:+) / array.size
+		end
+
+		public
+
 		def current_value
-			@config.wallet_btc * btc_avg_localbitcoins # btc_localbitcoins_manual
+			@config.wallet_btc * average([btc_localbitcoins_manual, btc_avg_localbitcoins].compact)
 		end
 
 		# TODO: this method returns at most 500 trades, it must be iterated!
 		def btc_localbitcoins_manual
-			response = Net::HTTP::get_response(URI.parse "https://localbitcoins.com/bitcoincharts/CZK/trades.json?since=311531").body
-			json = JSON.parse(response)
+			trades = nil
 
-			last = json.sort { |x, y| y["date"] <=> x["date"] }.take(5)
-			# require 'pp'
-			# pp last_10
+			while trades.nil? || trades.size > 5
+				try_start = trades ? trades[-2][:tid] : 580000
+				response = Net::HTTP::get_response(URI.parse "https://localbitcoins.com/bitcoincharts/CZK/trades.json?since=#{try_start}").body
+				trades = JSON.parse(response).map { |json|
+					{
+						tid: json["tid"],
+						date: Time.at(json["date"]),
+						amount: BigDecimal(json["amount"]),
+						price: BigDecimal(json["price"])
+					}
+				}
+			end
 
-			last.map! { |trade| trade["price"].to_f }
-			last.inject(&:+) / last.size
+			if (Time.now - trades.last[:date]) > 4 * 24 * 60 * 60
+				raise "Last entry older than 4 days"
+			end
+
+			trades.map { |trade| trade[:price] }.inject(&:+) / trades.size
 		end
 
 		def btc_avg_localbitcoins
 			response = Net::HTTP::get_response(URI.parse "https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/").body
 			json = JSON.parse(response)
 
-			raise "Response doesn't contain CZK: #{response}" unless json["CZK"]
-			ticker = json["CZK"]
+			ticker = json["CZK"] or return nil
 
 			%w{avg_1h avg_12h avg_24h}.each do |key|
 				ticker.delete(key) unless ticker[key] > 0
@@ -39,13 +58,6 @@ module BtcKit
 			avg = ticker["avg_1h"] || ticker["avg_12h"] || ticker["avg_24h"] or raise "Cannot get average price (ticker: #{ticker.inspect})"
 
 			avg.to_f
-		end
-
-		# BitCash API (dropped)
-		def btc_price_bitcash
-			json = JSON.parse(Net::HTTP.get_response(URI.parse "http://bitcash.cz/market/api/BTCCZK/ticker.json").body)
-			raise unless json["result"] == "success"
-			json["data"]["sell"]["value"].to_f
 		end
 	end
 end
