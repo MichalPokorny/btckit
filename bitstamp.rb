@@ -45,7 +45,7 @@ class Bitstamp
 		raise unless [ :buy, :sell ].include? type
 
 		price = 0.01 if price == :any # Minimum allowed price.
-		
+
 		req = Net::HTTP::Post.new("/api/#{type.to_s}/")
 		req.set_form_data({
 			user: @user.to_s,

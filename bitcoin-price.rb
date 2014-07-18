@@ -40,10 +40,11 @@ module BtcKit
 			end
 
 			if (Time.now - trades.last[:date]) > 4 * 24 * 60 * 60
-				raise "Last entry older than 4 days"
+				# raise "Last entry older than 4 days"
+				nil
+			else
+				trades.map { |trade| trade[:price] }.inject(&:+) / trades.size
 			end
-
-			trades.map { |trade| trade[:price] }.inject(&:+) / trades.size
 		end
 
 		def btc_avg_localbitcoins
