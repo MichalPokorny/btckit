@@ -18,8 +18,11 @@ module BtcKit
 
 		public
 
-		def current_value
-			@config.wallet_btc * average([btc_localbitcoins_manual, btc_avg_localbitcoins].compact)
+		def current_wallet_value
+			@config.wallet_btc * average([
+				btc_localbitcoins_manual,
+				btc_avg_localbitcoins
+			].compact)
 		end
 
 		# TODO: this method returns at most 500 trades, it must be iterated!

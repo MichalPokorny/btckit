@@ -16,6 +16,10 @@ module BtcKit
 			@config = Config.new
 		end
 
+		def wallet_value
+			BtcPrice.new.current_wallet_value
+		end
+
 		def main
 			raw = false
 			xosd = false
@@ -28,10 +32,8 @@ module BtcKit
 				end
 			end
 
-			price = BtcPrice.new
-
-			currentCZK = price.current_value
 			initialCZK = @config.initial_czk
+			currentCZK = wallet_value
 			delta = currentCZK - initialCZK
 			deltaPercent = (delta / initialCZK) * 100.0
 

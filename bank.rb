@@ -7,7 +7,7 @@ module BtcKit
 			@filename = filename
 
 			@bank = EuCentralBank.new
-			if File.exists? @filename and (Time.now - File.stat(@filename).mtime) < 24 * 60 * 60
+			if cache_is_valid?
 				@bank.update_rates @filename
 			else
 				@bank.update_rates
@@ -17,6 +17,12 @@ module BtcKit
 
 		def exchange(amount, from, to)
 			@bank.exchange(amount, from, to)
+		end
+
+		private
+
+		def cache_is_valid?
+			File.exists?(@filename) && (Time.now - File.stat(@filename).mtime) < 24 * 60 * 60
 		end
 	end
 end

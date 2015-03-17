@@ -83,7 +83,7 @@ module BtcKit
 		end
 
 		def bank_filename
-			config_dir + "bank_last_rates"		
+			config_dir + "bank_last_rates"
 		end
 
 		def initial_czk
